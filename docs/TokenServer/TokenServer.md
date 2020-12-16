@@ -36,4 +36,5 @@ E.g.: an existing counterparty ( the `Supplier GmbH` ) would like to invite a ne
 
 1. the `Consumer GmbH` opens a special web application ( the `Consumer App` ) when they are ready to join the network;
 2. the `Consumer GmbH` give a phone call to the `Supplier GmbH` and the `Supplier GmbH` send the `Supplier GmbH` a special PIN;
-3. 
+
+TODO: git signed commit
