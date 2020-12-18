@@ -1,0 +1,26 @@
+{
+  "name": "@deneb-kaitos/kaufmann",
+  "version": "0.0.0",
+  "description": "Kaufmann Network",
+  "engines": {
+    "node": "= 15.4.0",
+    "pnpm": "= 5.13.6"
+  },
+  "engineStrict": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deneb-kaitos/kaufmann.git"
+  },
+  "author": "dmitry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deneb-kaitos/kaufmann/issues"
+  },
+  "homepage": "https://github.com/deneb-kaitos/kaufmann#readme"
+}
