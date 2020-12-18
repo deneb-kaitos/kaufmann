@@ -1,19 +1,25 @@
 dist: focal
 addons:
-# language: node_js
+language: node_js
 # node_js:
 #   - 15.3.0
 os: linux
+env:
+  global:
+    - VOLTA_HOME=$HOME/.volta
+    - PATH=$VOLTA_HOME:$PATH
 before_install:
   - curl https://get.volta.sh | bash
+  - source ~/.bashrc
+  - volta setup --verbose
   - volta install node@15.4.0
   - volta install pnpm@5.13.6
   - pnpm config set store-dir ~/.pnpm-store
 install:
   - pnpm --recursive install
-before_script:
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
+# before_script:
+  # - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  # - chmod +x ./cc-test-reporter
   # - ./cc-test-reporter before-build
 script:
   - pnpm --recursive run test
