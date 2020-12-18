@@ -24,5 +24,9 @@ module.exports = {
     '/node_modules/*',
   ],
   rules: {
+    'import/no-extraneous-dependencies': 0,
+    'node/no-unpublished-import': 0,
+    'no-unused-expressions': 0,
+    'chai-friendly/no-unused-expressions': 2,
   },
 };
