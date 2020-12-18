@@ -1,8 +1,4 @@
 dist: focal
-addons:
-language: node_js
-# node_js:
-#   - 15.3.0
 os: linux
 env:
   global:
@@ -11,27 +7,16 @@ env:
 before_install:
   - curl https://get.volta.sh | bash
   - source ~/.bashrc
-  - volta setup --verbose
+  # - volta setup --verbose
   - volta install node@15.4.0
   - volta install pnpm@5.13.6
   - pnpm config set store-dir ~/.pnpm-store
 install:
   - pnpm --recursive install
-# before_script:
-  # - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  # - chmod +x ./cc-test-reporter
-  # - ./cc-test-reporter before-build
 script:
   - pnpm --recursive run test
 after_success:
   - pnpm --recursive run coverage
-  # - mkdir ./coverage-reports
-  # - cd src/specs && ../../cc-test-reporter format-coverage --input-type lcov --output ../../coverage-reports/codeclimate.specs.json && cd $TRAVIS_BUILD_DIR
-  # - cd src/libdata && ../../cc-test-reporter format-coverage --input-type lcov --output ../../coverage-reports/codeclimate.libdata.json && cd $TRAVIS_BUILD_DIR
-  # - cd src/libapiserver && ../../cc-test-reporter format-coverage --input-type lcov --output ../../coverage-reports/codeclimate.libapiserver.json && cd $TRAVIS_BUILD_DIR
-  # - ./cc-test-reporter sum-coverage ./coverage-reports/codeclimate.*.json --parts 3 --output ./coverage-reports/codeclimate.total.json
-  # - ./cc-test-reporter upload-coverage -i ./coverage-reports/codeclimate.total.json
-  # - ./cc-test-reporter after-build --exit-code 0
 cache:
   npm: false
   directories:
