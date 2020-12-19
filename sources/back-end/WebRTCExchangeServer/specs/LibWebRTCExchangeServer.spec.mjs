@@ -10,6 +10,9 @@ import {
 import {
   LibWebRTCExchangeServer,
 } from '../lib/LibWebRTCExchangeServer.mjs';
+import {
+  DataProviderClient,
+} from '../lib/clients/DataProviderClient.mjs';
 
 const {
   describe,
@@ -28,7 +31,7 @@ describe('LibWebRTCExchangeServer', () => {
       length: 6,
     },
   });
-  const ClientConfig = Object.freeze({
+  const wsClientConfig = Object.freeze({
     handshakeTimeout: 100,
     perMessageDeflate: false,
     headers: {
@@ -71,7 +74,7 @@ describe('LibWebRTCExchangeServer', () => {
   });
 
   it('should connect w/ a token', () => new Promise((resolve, reject) => {
-      const client = new WebSocket(wsAddress, wsProtocols, ClientConfig);
+      const client = new WebSocket(wsAddress, wsProtocols, wsClientConfig);
 
       client.binaryType = 'nodebuffer';
 
@@ -108,5 +111,18 @@ describe('LibWebRTCExchangeServer', () => {
       client.addEventListener('open', handleOpen);
       client.addEventListener('message', handleMessage);
       client.addEventListener('unexpected-response', handleUnexpectedResponse);
+  }));
+
+  it.only('should use DataProviderClient', () => new Promise((resolve, reject) => {
+    DataProviderClient.addEventListener('pin', (payload) => {
+      console.debug('received PIN:', payload);
+
+      DataProviderClient.removeAllListeners();
+      DataProviderClient.disconnect();
+
+      return resolve();
+    });
+
+    DataProviderClient.connect(wsAddress, wsProtocols, wsClientConfig);
   }));
 });

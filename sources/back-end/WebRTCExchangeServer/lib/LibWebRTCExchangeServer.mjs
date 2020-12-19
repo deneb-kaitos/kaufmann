@@ -17,6 +17,7 @@ export class LibWebRTCExchangeServer {
   #handle = null;
   #sockets = null;
   #encoder = null;
+  #decoder = null;
 
   constructor(config = null) {
     if (config === null) {
@@ -31,6 +32,7 @@ export class LibWebRTCExchangeServer {
     this.#config = Object.freeze(Object.assign({}, config));
     this.#sockets = new Map();
     this.#encoder = new TextEncoder();
+    this.#decoder = new TextDecoder();
   }
 
   async start() {
@@ -65,7 +67,11 @@ export class LibWebRTCExchangeServer {
           }
         },
         message: (ws, message, isBinary) => {},
-        close: (ws, code, message) => {},
+        close: (ws, code, message) => {
+          console.debug('close', code, this.#decoder.decode(message));
+
+          this.#sockets.delete((ws[WsConstants.key]).id);
+        },
       })
       .any('/*', (res, req) => {
         res.end('nothing here');
@@ -90,5 +96,6 @@ export class LibWebRTCExchangeServer {
     this.#server = null;
     this.#sockets = null;
     this.#encoder = null;
+    this.#decoder = null;
   }
 }
