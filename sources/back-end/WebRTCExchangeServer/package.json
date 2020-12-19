@@ -13,7 +13,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "./node_modules/.bin/eslint ./ --ext .mjs",
-    "test": "pnpm audit && pnpm run lint && NODE_ENV=test NODE_DEBUG=WebRTCExchangeServer ./node_modules/.bin/c8 ./node_modules/.bin/mocha -- --trace-warnings",
+    "test": "NODE_ENV=test NODE_DEBUG=WebRTCExchangeServer ./node_modules/.bin/c8 ./node_modules/.bin/mocha -- --trace-warnings",
     "coverage": "./node_modules/.bin/c8 report --reporter=text-lcov --reporter=lcov > ./coverage/coverage.lcov && codecov --disable=gcov"
   },
   "dependencies": {
@@ -29,7 +29,12 @@
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
-    "mocha": "^8.2.1"
+    "mocha": "^8.2.1",
+    "ws": "^7.4.1"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.2",
+    "utf-8-validate": "^5.0.3"
   },
   "mocha": {
     "allow-uncaught": false,

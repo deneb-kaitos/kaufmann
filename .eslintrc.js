@@ -8,7 +8,7 @@ module.exports = {
   extends: [
     'airbnb-base',
   ],
-  parser: 'esprima',
+  parser: 'espree',
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
@@ -28,5 +28,7 @@ module.exports = {
     'node/no-unpublished-import': 0,
     'no-unused-expressions': 0,
     'chai-friendly/no-unused-expressions': 2,
+    'import/extensions': 0,
+    'import/named': 0,
   },
 };

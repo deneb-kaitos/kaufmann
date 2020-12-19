@@ -15,7 +15,12 @@ importers:
       eslint-plugin-import: 2.22.1_eslint@7.15.0
       eslint-plugin-node: 11.1.0_eslint@7.15.0
       mocha: 8.2.1
+      ws: 7.4.1_0200697df5ac38adb1cba3cf2367a68a
+    optionalDependencies:
+      bufferutil: 4.0.2
+      utf-8-validate: 5.0.3
     specifiers:
+      bufferutil: ^4.0.2
       c8: ^7.3.5
       chai: ^4.2.0
       codecov: ^3.8.1
@@ -27,6 +32,8 @@ importers:
       mocha: ^8.2.1
       nanoid: ^3.1.20
       uWebSockets.js: 'github:uNetworking/uWebSockets.js#v18.11.0'
+      utf-8-validate: ^5.0.3
+      ws: ^7.4.1
 lockfileVersion: 5.2
 packages:
   /@babel/code-frame/7.12.11:
@@ -256,6 +263,14 @@ packages:
     dev: true
     resolution:
       integrity: sha512-qhAVI1+Av2X7qelOfAIYwXONood6XlZE/fXaBSmW/T5SzLAmCgzi+eiWE7fUvbHaeNBQH13UftjpXxsfLkMpgw==
+  /bufferutil/4.0.2:
+    dependencies:
+      node-gyp-build: 4.2.3
+    dev: false
+    optional: true
+    requiresBuild: true
+    resolution:
+      integrity: sha512-AtnG3W6M8B2n4xDQ5R+70EXvOpnXsFYg/AK2yTZd+HQ/oxAdz+GI+DvjmhBw3L0ole+LJ0ngqY4JMbDzkfNzhA==
   /c8/7.3.5:
     dependencies:
       '@bcoe/v8-coverage': 0.2.3
@@ -1395,6 +1410,12 @@ packages:
       node: 4.x || >=6.0.0
     resolution:
       integrity: sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
+  /node-gyp-build/4.2.3:
+    dev: false
+    hasBin: true
+    optional: true
+    resolution:
+      integrity: sha512-MN6ZpzmfNCRM+3t57PTJHgHyw/h4OWnZ6mR8P5j/uZtqQr46RRuDE/P+g3n0YR/AiYXeWixZZzaip77gdICfRg==
   /normalize-package-data/2.5.0:
     dependencies:
       hosted-git-info: 2.8.8
@@ -1979,6 +2000,14 @@ packages:
     dev: true
     resolution:
       integrity: sha1-iS/pWWCAXoVRnxzUOJ8stMu3ZS8=
+  /utf-8-validate/5.0.3:
+    dependencies:
+      node-gyp-build: 4.2.3
+    dev: false
+    optional: true
+    requiresBuild: true
+    resolution:
+      integrity: sha512-jtJM6fpGv8C1SoH4PtG22pGto6x+Y8uPprW0tw3//gGFhDDTiuksgradgFN6yRayDP4SyZZa6ZMGHLIa17+M8A==
   /uuid/3.4.0:
     dev: true
     hasBin: true
@@ -2058,6 +2087,23 @@ packages:
     dev: true
     resolution:
       integrity: sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
+  /ws/7.4.1_0200697df5ac38adb1cba3cf2367a68a:
+    dependencies:
+      bufferutil: 4.0.2
+      utf-8-validate: 5.0.3
+    dev: true
+    engines:
+      node: '>=8.3.0'
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+    resolution:
+      integrity: sha512-pTsP8UAfhy3sk1lSk/O/s4tjD0CRwvMnzvwr4OKGX7ZvqZtUyx4KIJB5JWbkykPoc55tixMGgTNoh3k4FkNGFQ==
   /y18n/4.0.1:
     dev: true
     resolution:
