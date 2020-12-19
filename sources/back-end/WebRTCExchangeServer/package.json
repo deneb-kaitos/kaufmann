@@ -13,11 +13,13 @@
   "license": "MIT",
   "scripts": {
     "lint": "./node_modules/.bin/eslint ./ --ext .mjs",
-    "test": "NODE_ENV=test NODE_DEBUG=WebRTCExchangeServer ./node_modules/.bin/c8 ./node_modules/.bin/mocha -- --trace-warnings",
+    "test": "NODE_OPTIONS='' NODE_V8_COVERAGE=./coverage NODE_ENV=test NODE_DEBUG=WebRTCExchangeServer ./node_modules/.bin/c8 ./node_modules/.bin/mocha -- --trace-deprecation --prof",
     "coverage": "./node_modules/.bin/c8 report --reporter=text-lcov --reporter=lcov > ./coverage/coverage.lcov && codecov --disable=gcov"
   },
   "dependencies": {
     "nanoid": "^3.1.20",
+    "nanoid-dictionary": "^4.1.0",
+    "nanoid-generate": "^1.0.0",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.11.0"
   },
   "devDependencies": {

@@ -1,20 +1,21 @@
 import μWs from 'uWebSockets.js';
-import {
-  customAlphabet,
-} from 'nanoid';
+import generate from 'nanoid-generate';
 import {
   HTTPCloseCodes,
-} from './HTTPCloseCodes.mjs';
+} from './constants/HTTPCloseCodes.mjs';
 import {
   upgradeHandler,
 } from './handlers/upgradeHandler.mjs';
+import {
+  WsConstants,
+} from './constants/WsConstants.mjs';
+
 
 export class LibWebRTCExchangeServer {
   #config = {};
   #server = null;
   #handle = null;
   #sockets = null;
-  #nanoid = null;
 
   constructor(config = null) {
     if (config === null) {
@@ -26,7 +27,6 @@ export class LibWebRTCExchangeServer {
       throw new TypeError('config is empty');
     }
 
-    this.#nanoid = customAlphabet('qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890', config.pin.length);
     this.#config = Object.freeze(Object.assign({}, config));
     this.#sockets = new Map();
   }
@@ -40,11 +40,27 @@ export class LibWebRTCExchangeServer {
         idleTimeout: 4,
         upgrade: (res, req, context) => upgradeHandler(res, req, context, this.#sockets),
         open: (ws) => {
-          ws.__kaufmann__ = {
-            id: this.#nanoid(),
+          ws[WsConstants.key] = {
+            ...ws[WsConstants.key],
+            ...{
+              id: generate.nolookalikes(this.#config.pin.length),
+            },
           };
 
-          this.#sockets.set(ws.__kaufmann__.id, ws);
+          this.#sockets.set(ws[WsConstants.key].id, ws);
+
+          console.debug('open', ws);
+
+          if ((ws[WsConstants.key]).credential.type === 'token') {
+            const binaryMessage = (new TextEncoder()).encode(JSON.stringify({
+              type: 'pin',
+              payload: (ws[WsConstants.key]).id,
+            }));
+            const isBinary = true;
+            const shouldCompress = false;
+
+            ws.send(binaryMessage, isBinary, shouldCompress);
+          }
         },
         message: (ws, message, isBinary) => {},
         close: (ws, code, message) => {},
@@ -69,7 +85,6 @@ export class LibWebRTCExchangeServer {
     }
 
     this.#config = null;
-    this.#nanoid = null;
     this.#server = null;
     this.#sockets = null;
   }

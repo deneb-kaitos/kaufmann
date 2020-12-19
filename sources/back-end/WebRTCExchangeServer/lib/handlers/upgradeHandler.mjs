@@ -3,10 +3,13 @@ import {
 } from 'async_hooks';
 import {
   HTTPCloseCodes,
-} from '../HTTPCloseCodes.mjs';
+} from '../constants/HTTPCloseCodes.mjs';
 import {
   isTokenValid,
 } from './isTokenValid.mjs';
+import {
+  WsConstants,
+} from '../constants/WsConstants.mjs';
 
 const als = new AsyncLocalStorage();
 
@@ -53,6 +56,33 @@ const checkCanProceed = () => {
   }
 };
 
+const resolveCredentials = () => {
+  const token = als.getStore().get('x-token').length === 0 ? null : als.getStore().get('x-token');
+  const pin = als.getStore().get('x-pin').length === 0 ? null : als.getStore().get('x-pin');
+
+  if (token !== null) {
+    return Object.freeze({
+      [WsConstants.key]: {
+        credential: {
+          type: 'token',
+          payload: token,
+        },
+      },
+    });
+  }
+
+  if (pin !== null) {
+    return Object.freeze({
+      [WsConstants.key]: {
+        credential: {
+          type: 'pin',
+          payload: pin,
+        },
+      },
+    });
+  }
+};
+
 export const upgradeHandler = (res, req, context, sockets) => {
   als.run(new Map(), () => {
     res.onAborted(() => {
@@ -67,8 +97,9 @@ export const upgradeHandler = (res, req, context, sockets) => {
       checkCanProceed();
 
       if (!res.aborted) {
-        res.upgrade({
-            url: req.getUrl()
+        res.upgrade(
+          {
+            ...resolveCredentials(),
           },
           req.getHeader('sec-websocket-key'),
           req.getHeader('sec-websocket-protocol'),

@@ -4,6 +4,8 @@ importers:
   sources/back-end/WebRTCExchangeServer:
     dependencies:
       nanoid: 3.1.20
+      nanoid-dictionary: 4.1.0
+      nanoid-generate: 1.0.0
       uWebSockets.js: github.com/uNetworking/uWebSockets.js/bd720c90ff8b90f478d918c1cbe3f1dcbc3a765b
     devDependencies:
       c8: 7.3.5
@@ -31,6 +33,8 @@ importers:
       eslint-plugin-node: ^11.1.0
       mocha: ^8.2.1
       nanoid: ^3.1.20
+      nanoid-dictionary: ^4.1.0
+      nanoid-generate: ^1.0.0
       uWebSockets.js: 'github:uNetworking/uWebSockets.js#v18.11.0'
       utf-8-validate: ^5.0.3
       ws: ^7.4.1
@@ -1386,6 +1390,25 @@ packages:
     dev: true
     resolution:
       integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+  /nanoid-dictionary/2.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-mjMNB0yg2lH6stvxeZs2sBFhwhMwoYdbevPT5DYMxk8iDTI3vAZ6YAvHm+uBFT4VvGITpPpBX1U0sWVRTlPzOA==
+  /nanoid-dictionary/4.1.0:
+    dev: false
+    resolution:
+      integrity: sha512-3EftpR64SjbMuaiMr/DRcEt0XtXSGOrZr8EhDNldLhIDzQSPyIUTmcNbuGpUXVgf534uS9UROVAjhC3qIOnfDA==
+  /nanoid-generate/1.0.0:
+    dependencies:
+      nanoid: 2.1.11
+      nanoid-dictionary: 2.0.0
+    dev: false
+    resolution:
+      integrity: sha512-uJm7wPK4VD6Oi/mPQEKnIR4B5+bUzl/54ORBullbldEWcW8BpDW3gQ3hzdKxQnga5Zd6ET8Cz4me6kbVbfCmMA==
+  /nanoid/2.1.11:
+    dev: false
+    resolution:
+      integrity: sha512-s/snB+WGm6uwi0WjsZdaVcuf3KJXlfGl2LcxgwkEwJF0D/BWzVWAZW/XY4bFaiR7s0Jk3FPvlnepg1H1b1UwlA==
   /nanoid/3.1.12:
     dev: true
     engines:

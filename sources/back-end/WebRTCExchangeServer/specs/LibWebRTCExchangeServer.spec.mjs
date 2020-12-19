@@ -6,7 +6,7 @@ import {
 } from 'nanoid';
 import {
   WebsocketCloseCodes,
-} from '../lib/WebsocketCloseCodes.mjs';
+} from '../lib/constants/WebsocketCloseCodes.mjs';
 import {
   LibWebRTCExchangeServer,
 } from '../lib/LibWebRTCExchangeServer.mjs';
@@ -97,10 +97,16 @@ describe('LibWebRTCExchangeServer', () => {
       const handleUnexpectedResponse = (req, res) => {
         console.debug('handleUnexpectedResponse', req, res);
       };
+      const handleMessage = ({ data }) => {
+        const message = JSON.parse((Buffer.from(data)).toString());
+
+        console.debug('handleMessage', message);
+      };
 
       client.addEventListener('error', handleError);
       client.addEventListener('close', handleClose);
       client.addEventListener('open', handleOpen);
+      client.addEventListener('message', handleMessage);
       client.addEventListener('unexpected-response', handleUnexpectedResponse);
   }));
 });
