@@ -4,9 +4,12 @@
   "description": "WebRTC Exchange Server",
   "engines": {
     "node": "= 15.4.0",
-    "pnpm": "= 5.13.6"
+    "pnpm": "= 5.13.7"
   },
   "engineStrict": true,
+  "volta": {
+    "node": "15.4.0"
+  },
   "type": "module",
   "main": "WebRTCExchangeServer.mjs",
   "author": "Dmitry N. Medvedev <dmitry.medvedev@gmail.com>",
@@ -58,6 +61,7 @@
     "no-opts": true,
     "spec": [
       "**/specs/*.mjs"
-    ]
+    ],
+    "require": "./specs/patchGlobalThis.mjs"
   }
 }
