@@ -98,7 +98,7 @@ describe('LibWebRTCExchangeServer', () => {
         console.debug('handleUnexpectedResponse', req, res);
       };
       const handleMessage = ({ data }) => {
-        const message = JSON.parse((Buffer.from(data)).toString());
+        const message = JSON.parse((new TextDecoder()).decode(data));
 
         console.debug('handleMessage', message);
       };
