@@ -24,6 +24,9 @@ const {
 describe('LibWebRTCExchangeServer', () => {
   const LibWebRTCExchangeServerConfig = Object.freeze({
     port: 9091,
+    pin: {
+      length: 6,
+    },
   });
   const ClientConfig = Object.freeze({
     handshakeTimeout: 100,
@@ -32,7 +35,26 @@ describe('LibWebRTCExchangeServer', () => {
       'x-token': (new Buffer(nanoid(64))).toString('base64'),
     },
   });
+  const wsAddress = `ws://localhost:${LibWebRTCExchangeServerConfig.port}/`;
+  const wsProtocols = Object.freeze([]);
   let libWebRTCExchangeServer = null;
+  const destroyClient = (client) => {
+    client.removeAllListeners();
+  
+    client = null;
+  };
+  const ok = (client, resolve) => {
+    destroyClient(client);
+
+    return resolve();
+  };
+
+  const fail = (error, client, reject) => {
+    destroyClient(client);
+
+    return reject(error);
+  };
+
 
   before(async () => {
     libWebRTCExchangeServer = new LibWebRTCExchangeServer(LibWebRTCExchangeServerConfig);
@@ -48,23 +70,10 @@ describe('LibWebRTCExchangeServer', () => {
     }
   });
 
-  it('should connect w/ a token', async () => {
-    const run = () => new Promise((resolve, reject) => {
-      const client = new WebSocket(`ws://localhost:${LibWebRTCExchangeServerConfig.port}/`, [], ClientConfig);
+  it('should connect w/ a token', () => new Promise((resolve, reject) => {
+      const client = new WebSocket(wsAddress, wsProtocols, ClientConfig);
 
       client.binaryType = 'nodebuffer';
-
-      const ok = () => {
-        client.removeAllListeners();
-
-        return resolve();
-      };
-
-      const fail = (error) => {
-        client.removeAllListeners();
-
-        return reject(error);
-      };
 
       const handleOpen = () => {
         client.close(WebsocketCloseCodes.CLOSE_NORMAL, 'bye');
@@ -78,12 +87,12 @@ describe('LibWebRTCExchangeServer', () => {
         expect(wasClean).to.be.true;
         expect(code).to.equal(1000);
 
-        return ok();
+        return ok(client, resolve);
       };
       const handleError = (errorEvent) => {
         console.debug('handleError', errorEvent);
 
-        return fail(new Error(errorEvent.message));
+        return fail(new Error(errorEvent.message), client, reject);
       };
       const handleUnexpectedResponse = (req, res) => {
         console.debug('handleUnexpectedResponse', req, res);
@@ -93,8 +102,5 @@ describe('LibWebRTCExchangeServer', () => {
       client.addEventListener('close', handleClose);
       client.addEventListener('open', handleOpen);
       client.addEventListener('unexpected-response', handleUnexpectedResponse);
-    });
-
-    return run();
-  });
+  }));
 });

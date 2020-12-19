@@ -1,12 +1,20 @@
 import μWs from 'uWebSockets.js';
 import {
+  customAlphabet,
+} from 'nanoid';
+import {
   HTTPCloseCodes,
 } from './HTTPCloseCodes.mjs';
+import {
+  upgradeHandler,
+} from './handlers/upgradeHandler.mjs';
 
 export class LibWebRTCExchangeServer {
   #config = {};
   #server = null;
   #handle = null;
+  #sockets = null;
+  #nanoid = null;
 
   constructor(config = null) {
     if (config === null) {
@@ -14,11 +22,13 @@ export class LibWebRTCExchangeServer {
     }
 
     // TODO: use ajv for validation
-    if (Object.getOwnPropertyNames(config).length === 0) {
+    if (Object.keys(config).length === 0) {
       throw new TypeError('config is empty');
     }
 
+    this.#nanoid = customAlphabet('qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890', config.pin.length);
     this.#config = Object.freeze(Object.assign({}, config));
+    this.#sockets = new Map();
   }
 
   async start() {
@@ -27,32 +37,15 @@ export class LibWebRTCExchangeServer {
       .ws('/*', {
         compression: μWs.SHARED_COMPRESSOR,
         maxPayloadLength: 16 * 1024 * 1024,
-        idleTimeout: 0,
-        upgrade: (res, req, context) => {
-          res.onAborted(() => {
-            res.aborted = true;
-          });
+        idleTimeout: 4,
+        upgrade: (res, req, context) => upgradeHandler(res, req, context, this.#sockets),
+        open: (ws) => {
+          ws.__kaufmann__ = {
+            id: this.#nanoid(),
+          };
 
-          const xTOKEN = req.getHeader('x-token'); // low case always
-
-          if (xTOKEN.length === 0) {
-            return res.end(JSON.stringify({
-              code: HTTPCloseCodes.UNAUTHORIZED,
-              message: 'no token',
-            }));
-          }
-
-          if (!res.aborted) {
-            res.upgrade(
-              { url: req.getUrl() },
-              req.getHeader('sec-websocket-key'),
-              req.getHeader('sec-websocket-protocol'),
-              req.getHeader('sec-websocket-extensions'),
-              context,
-            );
-          }
+          this.#sockets.set(ws.__kaufmann__.id, ws);
         },
-        open: (ws) => {},
         message: (ws, message, isBinary) => {},
         close: (ws, code, message) => {},
       })
@@ -74,5 +67,10 @@ export class LibWebRTCExchangeServer {
 
       this.#handle = null;
     }
+
+    this.#config = null;
+    this.#nanoid = null;
+    this.#server = null;
+    this.#sockets = null;
   }
 }
