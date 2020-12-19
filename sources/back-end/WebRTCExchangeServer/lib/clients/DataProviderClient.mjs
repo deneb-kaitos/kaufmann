@@ -1,4 +1,3 @@
-import WebSocket from 'ws';
 import {
   WebsocketCloseCodes,
 } from '../constants/WebsocketCloseCodes.mjs';
@@ -25,11 +24,10 @@ const raiseEvent = (type, payload) => {
 const handleUnexpectedResponse = () => {};
 const handleError = () => {};
 const handleClose = (closeEvent) => {
-  console.debug('handleClose', closeEvent);
+  // console.debug('handleClose', closeEvent);
 };
 const handleOpen = (openEvent) => {
-  // console.debug('handleOpen', openEvent);
-  console.debug('handleOpen', client);
+  // console.debug('handleOpen::ws:', openEvent.target);
 };
 const handleMessage = ({ data }) => {
   const { type, payload } = JSON.parse(decoder.decode(data));
@@ -49,7 +47,7 @@ const handleMessage = ({ data }) => {
 };
 
 const connect = (wsAddress, wsProtocols, wsClientConfig) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     // TODO: isClientConnected
 
     client = new WebSocket(

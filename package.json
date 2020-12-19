@@ -4,9 +4,12 @@
   "description": "Kaufmann Network",
   "engines": {
     "node": "= 15.4.0",
-    "pnpm": "= 5.13.6"
+    "pnpm": "= 5.13.7"
   },
   "engineStrict": true,
+  "volta": {
+    "node": "15.4.0"
+  },
   "directories": {
     "doc": "docs"
   },

@@ -1,3 +1,5 @@
+import generate from 'nanoid-generate';
+
 export const WsConstants = Object.freeze({
-  key: '__kaufmann__',
+  key: `__${generate.nolookalikes(12)}__`,
 });
