@@ -53,8 +53,6 @@ export class LibWebRTCExchangeServer {
 
           this.#sockets.set(ws[WsConstants.key].id, ws);
 
-          console.debug('open', ws.readyState);
-
           if ((ws[WsConstants.key]).credential.type === 'token') {
             const binaryMessage = this.#encoder.encode(JSON.stringify({
               type: 'pin',

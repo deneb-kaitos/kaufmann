@@ -27,7 +27,7 @@ const handleClose = (closeEvent) => {
   // console.debug('handleClose', closeEvent);
 };
 const handleOpen = (openEvent) => {
-  // console.debug('handleOpen::ws:', openEvent.target);
+  console.debug('handleOpen'); // openEvent.target - ws
 };
 const handleMessage = ({ data }) => {
   const { type, payload } = JSON.parse(decoder.decode(data));
@@ -48,8 +48,11 @@ const handleMessage = ({ data }) => {
 
 const connect = (wsAddress, wsProtocols, wsClientConfig) => {
   return new Promise(async (resolve, reject) => {
-    // TODO: isClientConnected
+    if (client !== null && [WebSocket.CONNECTING, WebSocket.OPEN].includes(client.readyState)) {
+      return resolve();
+    }
 
+    client = null;
     client = new WebSocket(
       wsAddress,
       wsProtocols,
