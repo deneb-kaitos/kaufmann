@@ -52,7 +52,6 @@ const connect = (wsAddress, wsProtocols, wsClientConfig) => {
       return resolve();
     }
 
-    client = null;
     client = new WebSocket(
       wsAddress,
       wsProtocols,
