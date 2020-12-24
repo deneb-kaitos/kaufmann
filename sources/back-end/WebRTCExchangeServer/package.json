@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "description": "WebRTC Exchange Server",
   "engines": {
-    "node": "= 15.4.0",
-    "pnpm": "= 5.13.7"
+    "node": "= 15.5.0",
+    "pnpm": "= 5.14.1"
   },
   "engineStrict": true,
   "volta": {
-    "node": "15.4.0"
+    "node": "15.5.0"
   },
   "type": "module",
   "main": "WebRTCExchangeServer.mjs",
@@ -16,20 +16,21 @@
   "license": "MIT",
   "scripts": {
     "lint": "./node_modules/.bin/eslint ./ --ext .mjs",
-    "test": "NODE_OPTIONS='' NODE_V8_COVERAGE=./coverage NODE_ENV=test NODE_DEBUG=WebRTCExchangeServer ./node_modules/.bin/c8 ./node_modules/.bin/mocha -- --trace-deprecation --prof",
+    "test": "NODE_OPTIONS='' NODE_V8_COVERAGE=./coverage NODE_ENV=test NODE_DEBUG=specs,uWs,DataProviderClientMachine,DataProviderClient,LibWebRTCExchangeServerSpecMachine ./node_modules/.bin/c8 ./node_modules/.bin/mocha -- --trace-deprecation --prof",
     "coverage": "./node_modules/.bin/c8 report --reporter=text-lcov --reporter=lcov > ./coverage/coverage.lcov && codecov --disable=gcov"
   },
   "dependencies": {
     "nanoid": "^3.1.20",
     "nanoid-dictionary": "^4.1.0",
     "nanoid-generate": "^1.0.0",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.11.0"
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v18.11.0",
+    "xstate": "^4.15.2"
   },
   "devDependencies": {
     "c8": "^7.3.5",
     "chai": "^4.2.0",
     "codecov": "^3.8.1",
-    "eslint": "^7.15.0",
+    "eslint": "^7.16.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-chai-friendly": "^0.6.0",
     "eslint-plugin-import": "^2.22.1",

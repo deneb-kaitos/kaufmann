@@ -8,8 +8,8 @@ before_install:
   - curl https://get.volta.sh | bash
   - source ~/.bashrc
   # - volta setup --verbose
-  - volta install node@15.4.0
-  - volta install pnpm@5.13.6
+  - volta install node@15.5.0
+  - volta install pnpm@5.14.1
   - pnpm config set store-dir ~/.pnpm-store
 install:
   - pnpm --recursive install

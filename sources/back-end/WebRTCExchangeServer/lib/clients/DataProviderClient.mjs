@@ -1,12 +1,25 @@
+import util from 'util';
+import {
+  interpret,
+} from 'xstate';
+import {
+  DataProviderClientInterpreter,
+} from './DataProviderClientMachine.mjs';
 import {
   WebsocketCloseCodes,
 } from '../constants/WebsocketCloseCodes.mjs';
+
+const debuglog = util.debuglog('DataProviderClient');
 
 /**
  * 1. connect to WSS
  * 2. retrieve own ID ( this will be the PIN ) from the WSS
  * 3. open WebRTC connection ???
  */
+
+DataProviderClientInterpreter.onTransition((state) => {
+  debuglog('.onTransition:', state.value);
+});
 
 let client = null;
 let id = null;
@@ -16,55 +29,98 @@ const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 
 const raiseEvent = (type, payload) => {
+  debuglog('DataProviderClient.raiseEvent:', type, payload);
+  
   if (events.has(type)) {
     events.get(type).forEach((handler) => handler(payload));
   }
 };
 
-const handleUnexpectedResponse = () => {};
-const handleError = () => {};
+const handleUnexpectedResponse = (unexpectedResponseEvent) => {
+  debuglog('DataProviderClient.handleUnexpectedResponse:', unexpectedResponseEvent);
+
+  DataProviderClientInterpreter.send({
+    type: 'ws:unexpected-response',
+    payload: unexpectedResponseEvent,
+  });
+};
+const handleError = (errorEvent) => {
+  debuglog('DataProviderClient.handleError:', errorEvent);
+
+  DataProviderClientInterpreter.send({
+    type: 'ws:error',
+    payload: errorEvent,
+  });
+};
 const handleClose = (closeEvent) => {
-  // console.debug('handleClose', closeEvent);
+  debuglog('DataProviderClient.handleClose');
+
+  DataProviderClientInterpreter.send({
+    type: 'ws:close',
+    payload: closeEvent,
+  });
 };
 const handleOpen = (openEvent) => {
-  console.debug('handleOpen'); // openEvent.target - ws
+  debuglog('DataProviderClient.handleOpen');
+  // openEvent.target - ws
+
+  DataProviderClientInterpreter.send({
+    type: 'ws:open',
+    payload: null,
+  });
 };
 const handleMessage = ({ data }) => {
-  const { type, payload } = JSON.parse(decoder.decode(data));
+  const message = JSON.parse(decoder.decode(data));
+
+  const {
+    type,
+    payload,
+  } = message;
+  
+  debuglog('DataProviderClient.handleMessage:', type, payload);
+
+  DataProviderClientInterpreter.send({
+    type: 'ws:message',
+    payload: data,
+  });
 
   switch (type) {
-    case 'pin': {
+    case 'id': {
       raiseEvent(type, payload);
 
       break;
     }
     default: {
-      console.debug('handleMessage', type, payload);
+      debuglog('handleMessage::unhandled event', type, payload);
 
       break;
     }
   }
 };
 
-const connect = (wsAddress, wsProtocols, wsClientConfig) => {
-  return new Promise(async (resolve, reject) => {
-    if (client !== null && [WebSocket.CONNECTING, WebSocket.OPEN].includes(client.readyState)) {
-      return resolve();
-    }
+const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve, reject) => {
+  if (client !== null && [WebSocket.CONNECTING, WebSocket.OPEN].includes(client.readyState)) {
+    return resolve();
+  }
 
-    client = new WebSocket(
-      wsAddress,
-      wsProtocols,
-      wsClientConfig,
-    );
+  DataProviderClientInterpreter.start();
 
-    client.addEventListener('unexpected-response', handleUnexpectedResponse);
-    client.addEventListener('error', handleError);
-    client.addEventListener('close', handleClose);
-    client.addEventListener('open', handleOpen);
-    client.addEventListener('message', handleMessage);
-  });
-};
+  client = new WebSocket(
+    wsAddress,
+    wsProtocols,
+    wsClientConfig,
+  );
+
+  debuglog('DataProviderClient.connect:', { wsAddress, wsClientConfig });
+
+  client.addEventListener('unexpected-response', handleUnexpectedResponse);
+  client.addEventListener('error', handleError);
+  client.addEventListener('close', handleClose);
+  client.addEventListener('open', handleOpen);
+  client.addEventListener('message', handleMessage);
+
+  resolve();
+});
 
 const disconnect = () => {
   removeAllListeners();
@@ -75,6 +131,10 @@ const disconnect = () => {
 
     client = null;
   }
+
+  // TODO: what is the proper way to dispose of a machine?
+  DataProviderClientInterpreter.stop();
+  dataProviderClientMachine = null;
 };
 
 const addEventListener = (event, handler) => {

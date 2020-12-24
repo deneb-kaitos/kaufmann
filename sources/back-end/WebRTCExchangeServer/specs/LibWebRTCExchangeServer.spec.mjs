@@ -1,3 +1,4 @@
+import util from 'util';
 import mocha from 'mocha';
 import chai from 'chai';
 import WebSocket from 'ws';
@@ -13,7 +14,17 @@ import {
 import {
   DataProviderClient,
 } from '../lib/clients/DataProviderClient.mjs';
+import {
+  DataConsumerClient,
+} from '../lib/clients/DataConsumerClient.mjs';
+import {
+  LibWebRTCExchangeServerSpecInterpreter,
+} from './LibWebRTCExchangeServerSpecMachine.mjs';
+import {
+  interpret,
+} from 'xstate';
 
+const debuglog = util.debuglog('specs');
 const {
   describe,
   before,
@@ -59,70 +70,71 @@ describe('LibWebRTCExchangeServer', () => {
   };
 
 
-  before(async () => {
-    libWebRTCExchangeServer = new LibWebRTCExchangeServer(LibWebRTCExchangeServerConfig);
+  // before(async () => {
+  //   libWebRTCExchangeServer = new LibWebRTCExchangeServer(LibWebRTCExchangeServerConfig);
 
-    return libWebRTCExchangeServer.start();
-  });
+  //   return libWebRTCExchangeServer.start();
+  // });
 
-  after(async () => {
-    if (libWebRTCExchangeServer) {
-      await libWebRTCExchangeServer.stop();
+  // after(async () => {
+  //   if (libWebRTCExchangeServer) {
+  //     await libWebRTCExchangeServer.stop();
 
-      libWebRTCExchangeServer = null;
-    }
-  });
+  //     libWebRTCExchangeServer = null;
+  //   }
+  // });
 
-  it('should connect w/ a token', () => new Promise((resolve, reject) => {
-      const client = new WebSocket(wsAddress, wsProtocols, wsClientConfig);
-
-      client.binaryType = 'nodebuffer';
-
-      const handleOpen = () => {
-        client.close(WebsocketCloseCodes.CLOSE_NORMAL, 'bye');
-      };
-      const handleClose = (closeEvent) => {
-        const {
-          wasClean,
-          code,
-        } = closeEvent;
-
-        expect(wasClean).to.be.true;
-        expect(code).to.equal(1000);
-
-        return ok(client, resolve);
-      };
-      const handleError = (errorEvent) => {
-        console.debug('handleError', errorEvent);
-
-        return fail(new Error(errorEvent.message), client, reject);
-      };
-      const handleUnexpectedResponse = (req, res) => {
-        console.debug('handleUnexpectedResponse', req, res);
-      };
-      const handleMessage = ({ data }) => {
-        const message = JSON.parse((new TextDecoder()).decode(data));
-
-        console.debug('handleMessage', message);
-      };
-
-      client.addEventListener('error', handleError);
-      client.addEventListener('close', handleClose);
-      client.addEventListener('open', handleOpen);
-      client.addEventListener('message', handleMessage);
-      client.addEventListener('unexpected-response', handleUnexpectedResponse);
-  }));
-
-  it.only('should use DataProviderClient', () => new Promise((resolve, reject) => {
-    DataProviderClient.addEventListener('pin', (payload) => {
-      console.debug('received PIN:', payload);
-
-      DataProviderClient.removeAllListeners();
-      DataProviderClient.disconnect();
-
-      return resolve();
+  it('should pass Macaroon from DataProviderClient to DataAcceptorClient', () => new Promise((resolve, reject) => {
+    const WebRTCExchangeServerAccessToken = (new Buffer(nanoid(64))).toString('base64');
+    const configs = {
+      dataProvider: {
+        handshakeTimeout: 100,
+        perMessageDeflate: false,
+        headers: {
+          'x-token': WebRTCExchangeServerAccessToken,
+        },
+      },
+      dataConsumer: {
+        handshakeTimeout: 100,
+        perMessageDeflate: false,
+        headers: {
+          'x-pin': null,
+        },
+      },
+      ws: {
+        address: wsAddress,
+        protocols: wsProtocols,
+      },
+      wss: LibWebRTCExchangeServerConfig,
+    };
+    const libWebRTCExchangeServerSpecInterpreter = LibWebRTCExchangeServerSpecInterpreter({
+      dataProvider: DataProviderClient,
+      dataConsumer: DataConsumerClient,
+      wss: LibWebRTCExchangeServer,
+      configs,
     });
 
-    DataProviderClient.connect(wsAddress, wsProtocols, wsClientConfig);
-  }));
+    libWebRTCExchangeServerSpecInterpreter
+      // .onChange((data) => {
+      //   debuglog('TEST.onChange', data);
+      // })
+      .onDone((data) => {
+        debuglog('TEST.onDone', data);
+      })
+      // .onEvent((event) => {
+      //   debuglog('TEST.onEvent', event);
+      // })
+      // .onSend((sendEvent) => {
+      //   debuglog('TEST.onSend', sendEvent);
+      // })
+      .onStop(() => {
+        debuglog('TEST.onStop');
+
+        resolve();
+      })
+      // .onTransition((state) => {
+      //   debuglog('TEST.onTransition', state.value);
+      // })
+      .start();
+  })).timeout(500);
 });

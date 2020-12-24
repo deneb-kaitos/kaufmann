@@ -1,3 +1,4 @@
+import util from 'util';
 import {
   AsyncLocalStorage,
 } from 'async_hooks';
@@ -5,12 +6,16 @@ import {
   HTTPCloseCodes,
 } from '../constants/HTTPCloseCodes.mjs';
 import {
+  WebsocketCloseCodes,
+} from '../constants/WebsocketCloseCodes.mjs';
+import {
   isTokenValid,
 } from './isTokenValid.mjs';
 import {
   WsConstants,
 } from '../constants/WsConstants.mjs';
 
+const debuglog = util.debuglog('uWs');
 const als = new AsyncLocalStorage();
 
 const noCredentialsResponse = JSON.stringify({
@@ -85,6 +90,9 @@ const resolveCredentials = () => {
 
 export const upgradeHandler = (res, req, context, sockets) => {
   als.run(new Map(), () => {
+
+    debuglog('upgradeHandler');
+
     res.onAborted(() => {
       res.aborted = true;
     });
@@ -108,7 +116,7 @@ export const upgradeHandler = (res, req, context, sockets) => {
         );
       }
     } catch (validationError) {
-      return res.end(validationError.message);
+      return res.end(WebsocketCloseCodes.SERVER_ERROR, validationError.message);
     }
   });
 };

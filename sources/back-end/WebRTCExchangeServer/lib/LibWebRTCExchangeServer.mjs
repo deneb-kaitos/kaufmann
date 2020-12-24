@@ -1,3 +1,4 @@
+import util from 'util';
 import μWs from 'uWebSockets.js';
 import generate from 'nanoid-generate';
 import {
@@ -9,7 +10,11 @@ import {
 import {
   WsConstants,
 } from './constants/WsConstants.mjs';
+import {
+  handleMessage,
+} from './handlers/handleMessage.mjs';
 
+const debuglog = util.debuglog('uWs');
 
 export class LibWebRTCExchangeServer {
   #config = {};
@@ -35,52 +40,69 @@ export class LibWebRTCExchangeServer {
     this.#decoder = new TextDecoder();
   }
 
+  get isRunning() {
+    return this.#handle !== null;
+  }
+
   async start() {
-    this.#server = μWs
-      .App({})
-      .ws('/*', {
-        compression: μWs.SHARED_COMPRESSOR,
-        maxPayloadLength: 16 * 1024 * 1024,
-        idleTimeout: 4,
-        upgrade: (res, req, context) => upgradeHandler(res, req, context, this.#sockets),
-        open: (ws) => {
-          ws[WsConstants.key] = {
-            ...ws[WsConstants.key],
-            ...{
-              id: generate.nolookalikes(this.#config.pin.length),
-            },
-          };
+    if (this.#server !== null) {
+      return Promise.resolve();
+    }
 
-          this.#sockets.set(ws[WsConstants.key].id, ws);
+    return new Promise((resolve, reject) => {
+      this.#server = μWs
+        .App({})
+        .ws('/*', {
+          compression: μWs.SHARED_COMPRESSOR,
+          maxPayloadLength: 16 * 1024 * 1024,
+          idleTimeout: 4,
+          upgrade: (res, req, context) => upgradeHandler(res, req, context, this.#sockets),
+          open: (ws) => {
+            ws[WsConstants.key] = {
+              ...ws[WsConstants.key],
+              ...{
+                id: generate.nolookalikes(this.#config.pin.length),
+              },
+            };
+  
+            this.#sockets.set(ws[WsConstants.key].id, ws);
 
-          if ((ws[WsConstants.key]).credential.type === 'token') {
-            const binaryMessage = this.#encoder.encode(JSON.stringify({
-              type: 'pin',
-              payload: (ws[WsConstants.key]).id,
-            }));
-            const isBinary = true;
-            const shouldCompress = false;
+            debuglog('μWs.open:', ws[WsConstants.key], (ws[WsConstants.key]).id);
 
-            ws.send(binaryMessage, isBinary, shouldCompress);
+            if ((ws[WsConstants.key]).credential.type === 'token') {
+              const binaryMessage = this.#encoder.encode(JSON.stringify({
+                type: 'id',
+                payload: (ws[WsConstants.key]).id,
+              }));
+              const isBinary = true;
+              const shouldCompress = false;
+  
+              ws.send(binaryMessage, isBinary, shouldCompress);
+            }
+          },
+          message: handleMessage,
+          close: (ws, code, message) => {
+            debuglog('close', code, this.#decoder.decode(message));
+  
+            this.#sockets.delete((ws[WsConstants.key]).id);
+          },
+        })
+        .any('/*', (res, req) => {
+          res.end('nothing here');
+        })
+        .listen(this.#config.port, (handle) => {
+          if (handle) {
+            this.#handle = handle ?? null;
+
+            debuglog(`listening on port ${this.#config.port}`);
+
+            return resolve();
+          } else {
+            return reject(new Error(`failed to listen on port ${this.#config.port}`));
           }
-        },
-        message: (ws, message, isBinary) => {},
-        close: (ws, code, message) => {
-          console.debug('close', code, this.#decoder.decode(message));
+        });
+    });
 
-          this.#sockets.delete((ws[WsConstants.key]).id);
-        },
-      })
-      .any('/*', (res, req) => {
-        res.end('nothing here');
-      })
-      .listen(this.#config.port, (handle) => {
-        if (handle) {
-          this.#handle = handle;
-        } else {
-          throw new Error(`failed to listen on port ${this.#config.port}`)
-        }
-      });
   }
 
   async stop() {
