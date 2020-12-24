@@ -10,12 +10,22 @@ before_install:
   - volta install node@15.5.0
   - volta install pnpm@5.14.1
   - pnpm config set store-dir ~/.pnpm-store
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
 install:
   - pnpm --recursive install
+before_script:
+  - ./cc-test-reporter before-build
 script:
   - pnpm --recursive run test
-after_success:
   - pnpm --recursive run coverage
+after_script:
+#   - ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.backend.json coverage/backend/.resultset.json # Format backend coverage
+#   - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.frontend.json coverage/frontend/lcov.info  # Format frontend coverage
+#   - ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2                  # Sum both coverage parts into coverage/codeclimate.json
+#   - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage; fi  # Upload coverage/codeclimate.json
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+# after_success:
 cache:
   npm: false
   directories:
