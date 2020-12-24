@@ -1,3 +1,5 @@
+# SEE: https://docs.codeclimate.com/docs/travis-ci-test-coverage
+
 dist: focal
 os: linux
 env:
@@ -17,8 +19,7 @@ install:
 before_script:
   - ./cc-test-reporter before-build
 script:
-  - pnpm --recursive run test
-  - pnpm --recursive run coverage
+  - pnpm --recursive run test && pnpm --recursive run coverage
 after_script:
 #   - ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.backend.json coverage/backend/.resultset.json # Format backend coverage
 #   - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.frontend.json coverage/frontend/lcov.info  # Format frontend coverage
