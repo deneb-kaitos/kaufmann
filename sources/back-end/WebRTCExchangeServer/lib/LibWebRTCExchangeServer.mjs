@@ -2,9 +2,6 @@ import util from 'util';
 import μWs from 'uWebSockets.js';
 import generate from 'nanoid-generate';
 import {
-  HTTPCloseCodes,
-} from './constants/HTTPCloseCodes.mjs';
-import {
   upgradeHandler,
 } from './handlers/upgradeHandler.mjs';
 import {
@@ -34,7 +31,7 @@ export class LibWebRTCExchangeServer {
       throw new TypeError('config is empty');
     }
 
-    this.#config = Object.freeze(Object.assign({}, config));
+    this.#config = Object.freeze({ ...config });
     this.#sockets = new Map();
     this.#encoder = new TextEncoder();
     this.#decoder = new TextDecoder();
@@ -64,7 +61,7 @@ export class LibWebRTCExchangeServer {
                 id: generate.nolookalikes(this.#config.pin.length),
               },
             };
-  
+
             this.#sockets.set(ws[WsConstants.key].id, ws);
 
             debuglog('μWs.open:', ws[WsConstants.key], (ws[WsConstants.key]).id);
@@ -76,18 +73,18 @@ export class LibWebRTCExchangeServer {
               }));
               const isBinary = true;
               const shouldCompress = false;
-  
+
               ws.send(binaryMessage, isBinary, shouldCompress);
             }
           },
           message: handleMessage,
           close: (ws, code, message) => {
             debuglog('close', code, this.#decoder.decode(message));
-  
+
             this.#sockets.delete((ws[WsConstants.key]).id);
           },
         })
-        .any('/*', (res, req) => {
+        .any('/*', (res) => {
           res.end('nothing here');
         })
         .listen(this.#config.port, (handle) => {
@@ -97,12 +94,11 @@ export class LibWebRTCExchangeServer {
             debuglog(`listening on port ${this.#config.port}`);
 
             return resolve();
-          } else {
-            return reject(new Error(`failed to listen on port ${this.#config.port}`));
           }
+
+          return reject(new Error(`failed to listen on port ${this.#config.port}`));
         });
     });
-
   }
 
   async stop() {

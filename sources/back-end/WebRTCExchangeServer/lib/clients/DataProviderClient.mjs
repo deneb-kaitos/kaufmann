@@ -1,8 +1,5 @@
 import util from 'util';
 import {
-  interpret,
-} from 'xstate';
-import {
   DataProviderClientInterpreter,
 } from './DataProviderClientMachine.mjs';
 import {
@@ -22,15 +19,15 @@ DataProviderClientInterpreter.onTransition((state) => {
 });
 
 let client = null;
-let id = null;
+// let id = null;
 const events = new Map();
 
 const decoder = new TextDecoder();
-const encoder = new TextEncoder();
+// const encoder = new TextEncoder();
 
 const raiseEvent = (type, payload) => {
   debuglog('DataProviderClient.raiseEvent:', type, payload);
-  
+
   if (events.has(type)) {
     events.get(type).forEach((handler) => handler(payload));
   }
@@ -60,7 +57,7 @@ const handleClose = (closeEvent) => {
     payload: closeEvent,
   });
 };
-const handleOpen = (openEvent) => {
+const handleOpen = (/* openEvent */) => {
   debuglog('DataProviderClient.handleOpen');
   // openEvent.target - ws
 
@@ -76,7 +73,7 @@ const handleMessage = ({ data }) => {
     type,
     payload,
   } = message;
-  
+
   debuglog('DataProviderClient.handleMessage:', type, payload);
 
   DataProviderClientInterpreter.send({
@@ -98,7 +95,7 @@ const handleMessage = ({ data }) => {
   }
 };
 
-const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve, reject) => {
+const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve) => {
   if (client !== null && [WebSocket.CONNECTING, WebSocket.OPEN].includes(client.readyState)) {
     return resolve();
   }
@@ -119,8 +116,12 @@ const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve
   client.addEventListener('open', handleOpen);
   client.addEventListener('message', handleMessage);
 
-  resolve();
+  return resolve();
 });
+
+const removeAllListeners = () => {
+  events.clear();
+};
 
 const disconnect = () => {
   removeAllListeners();
@@ -134,7 +135,6 @@ const disconnect = () => {
 
   // TODO: what is the proper way to dispose of a machine?
   DataProviderClientInterpreter.stop();
-  dataProviderClientMachine = null;
 };
 
 const addEventListener = (event, handler) => {
@@ -143,10 +143,6 @@ const addEventListener = (event, handler) => {
   }
 
   events.get(event).push(handler);
-};
-
-const removeAllListeners = () => {
-  events.clear();
 };
 
 export const DataProviderClient = Object.freeze({

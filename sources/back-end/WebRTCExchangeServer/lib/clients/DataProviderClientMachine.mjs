@@ -45,7 +45,7 @@ const DataProviderClientMachine = Machine({
       always: [
         {
           target: 'finalOK',
-        }
+        },
       ],
     },
     finalOK: {
@@ -60,16 +60,17 @@ const DataProviderClientMachine = Machine({
 }, {
   actions: {
     log: (context, event) => {
-      let { type, payload } = event;
+      const { type } = event;
+      let { payload } = event;
 
       if (payload && Buffer.isBuffer(payload)) {
-        payload = JSON.parse(Buffer.from(payload).toString());
+        payload = JSON.parse(Buffer.from(payload).toString()) ?? '';
       }
 
-      debuglog('LOG:', type, payload ? payload : '', context ? context : '');
+      debuglog('LOG:', type, payload, context);
     },
     error: (context, event) => {
-      debuglog('ERR:', event, context ? context : '');
+      debuglog('ERR:', event, context);
     },
   },
 });

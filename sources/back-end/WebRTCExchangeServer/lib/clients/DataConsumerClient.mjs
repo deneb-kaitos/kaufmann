@@ -1,6 +1,9 @@
+import util from 'util';
 import {
   WebsocketCloseCodes,
 } from '../constants/WebsocketCloseCodes.mjs';
+
+const debuglog = util.debuglog('DataConsumerClient');
 
 /**
  * 1. connect to WSS
@@ -13,7 +16,7 @@ let id = null;
 const events = new Map();
 
 const decoder = new TextDecoder();
-const encoder = new TextEncoder();
+// const encoder = new TextEncoder();
 
 const raiseEvent = (type, payload) => {
   if (events.has(type)) {
@@ -22,57 +25,64 @@ const raiseEvent = (type, payload) => {
 };
 
 const handleUnexpectedResponse = (unexpectedResponseEvent) => {
-  console.debug('handleUnexpectedResponse', unexpectedResponseEvent);
+  debuglog('handleUnexpectedResponse', unexpectedResponseEvent);
 };
 const handleError = (errorEvent) => {
-  console.debug('handleError', errorEvent);
+  debuglog('handleError', errorEvent);
 };
 const handleClose = (closeEvent) => {
-  console.debug('handleClose', closeEvent);
+  debuglog('handleClose', closeEvent);
 };
-const handleOpen = (openEvent) => {
-  console.debug('handleOpen'); // openEvent.target - ws
+const handleOpen = (/* openEvent */) => {
+  debuglog('handleOpen'); // openEvent.target - ws
 };
 const handleMessage = ({
-  data
+  data,
 }) => {
   const {
     type,
-    payload
+    payload,
   } = JSON.parse(decoder.decode(data));
 
   switch (type) {
     case 'pin': {
+      // eslint-disable-next-line no-unused-vars
+      id = payload;
+
       raiseEvent(type, payload);
 
       break;
     }
     default: {
-      console.debug('handleMessage::unhandled event', type, payload);
+      debuglog('handleMessage::unhandled event', type, payload);
 
       break;
     }
   }
 };
 
-const connect = (wsAddress, wsProtocols, wsClientConfig) => {
-  return new Promise(async (resolve, reject) => {
-    if (client !== null && [WebSocket.CONNECTING, WebSocket.OPEN].includes(client.readyState)) {
-      return resolve();
-    }
+const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve) => {
+  if (client !== null && [WebSocket.CONNECTING, WebSocket.OPEN].includes(client.readyState)) {
+    return resolve();
+  }
 
-    client = new WebSocket(
-      wsAddress,
-      wsProtocols,
-      wsClientConfig,
-    );
+  client = new WebSocket(
+    wsAddress,
+    wsProtocols,
+    wsClientConfig,
+  );
 
-    client.addEventListener('unexpected-response', handleUnexpectedResponse);
-    client.addEventListener('error', handleError);
-    client.addEventListener('close', handleClose);
-    client.addEventListener('open', handleOpen);
-    client.addEventListener('message', handleMessage);
-  });
+  client.addEventListener('unexpected-response', handleUnexpectedResponse);
+  client.addEventListener('error', handleError);
+  client.addEventListener('close', handleClose);
+  client.addEventListener('open', handleOpen);
+  client.addEventListener('message', handleMessage);
+
+  return undefined;
+});
+
+const removeAllListeners = () => {
+  events.clear();
 };
 
 const disconnect = () => {
@@ -92,10 +102,6 @@ const addEventListener = (event, handler) => {
   }
 
   events.get(event).push(handler);
-};
-
-const removeAllListeners = () => {
-  events.clear();
 };
 
 export const DataConsumerClient = Object.freeze({

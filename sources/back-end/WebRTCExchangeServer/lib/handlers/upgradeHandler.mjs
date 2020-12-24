@@ -50,14 +50,10 @@ const checkCanProceed = () => {
 
   if (token !== null && isTokenValid(token) === false) {
     throw new Error(invalidTokenResponse);
-  } else {
-    return;
   }
 
   if (pin !== null && sockets.has(pin) === false) {
     throw new Error(invalidPinResponse);
-  } else {
-    return;
   }
 };
 
@@ -65,6 +61,8 @@ const resolveCredentials = () => {
   const token = als.getStore().get('x-token').length === 0 ? null : als.getStore().get('x-token');
   const pin = als.getStore().get('x-pin').length === 0 ? null : als.getStore().get('x-pin');
 
+  // TODO: see this https://snyk.io/blog/node-js-timing-attack-ccc-ctf/
+  // eslint-disable-next-line security/detect-possible-timing-attacks
   if (token !== null) {
     return Object.freeze({
       [WsConstants.key]: {
@@ -86,11 +84,12 @@ const resolveCredentials = () => {
       },
     });
   }
+
+  return null;
 };
 
 export const upgradeHandler = (res, req, context, sockets) => {
   als.run(new Map(), () => {
-
     debuglog('upgradeHandler');
 
     res.onAborted(() => {
@@ -118,5 +117,7 @@ export const upgradeHandler = (res, req, context, sockets) => {
     } catch (validationError) {
       return res.end(WebsocketCloseCodes.SERVER_ERROR, validationError.message);
     }
+
+    return undefined;
   });
 };
