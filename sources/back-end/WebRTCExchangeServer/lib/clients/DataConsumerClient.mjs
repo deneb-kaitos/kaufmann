@@ -53,8 +53,13 @@ const handleMessage = ({
 
       break;
     }
+    case 'connection-established': {
+      debuglog('connection-established');
+
+      break;
+    }
     default: {
-      debuglog('handleMessage::unhandled event', type, payload);
+      debuglog('handleMessage::unhandled event', { type, payload });
 
       break;
     }
@@ -78,7 +83,7 @@ const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve
   client.addEventListener('open', handleOpen);
   client.addEventListener('message', handleMessage);
 
-  return undefined;
+  resolve();
 });
 
 const removeAllListeners = () => {

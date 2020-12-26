@@ -136,5 +136,5 @@ describe('LibWebRTCExchangeServer', () => {
       //   debuglog('TEST.onTransition', state.value);
       // })
       .start();
-  })).timeout(500);
+  })).timeout(50);
 });

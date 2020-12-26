@@ -4,4 +4,5 @@ export const WebsocketCloseCodes = Object.freeze({
   CLOSE_NORMAL: 1000,
   CLOSE_UNSUPPORTED: 1003, // binary-only endpoint received text frame
   SERVER_ERROR: 1011,
+  UNSUPPORTED_PAYLOAD: 1007,
 });

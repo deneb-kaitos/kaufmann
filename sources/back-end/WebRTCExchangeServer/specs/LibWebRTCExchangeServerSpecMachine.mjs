@@ -2,6 +2,7 @@ import util from 'util';
 import {
   Machine,
   interpret,
+  assign,
 } from 'xstate';
 
 const debuglog = util.debuglog('LibWebRTCExchangeServerSpecMachine');
@@ -9,14 +10,16 @@ const debuglog = util.debuglog('LibWebRTCExchangeServerSpecMachine');
 // eslint-disable-next-line import/no-mutable-exports
 let LibWebRTCExchangeServerSpecInterpreter = null;
 
+const startWsServer = (context) => {
+  // eslint-disable-next-line new-cap
+  context.wss = new context.wss(context.configs.wss);
+
+  return context.wss.start();
+};
+
 const setupDataProvider = (context) => new Promise((resolve) => {
   context.dataProvider.addEventListener('id', (payload) => {
-    debuglog('context.dataProvider::on id', payload);
-
-    LibWebRTCExchangeServerSpecInterpreter.send({
-      type: 'id',
-      payload,
-    });
+    resolve(payload);
   });
 
   const wsAddress = context.configs.ws.address;
@@ -24,15 +27,19 @@ const setupDataProvider = (context) => new Promise((resolve) => {
   const wsConfig = context.configs.dataProvider;
 
   context.dataProvider.connect(wsAddress, wsProtocols, wsConfig);
-
-  resolve();
 });
 
-const startWsServer = (context) => {
-  // eslint-disable-next-line new-cap
-  context.wss = new context.wss(context.configs.wss);
+const setupDataConsumer = async (context) => {
+  const wsAddress = context.configs.ws.address;
+  const wsProtocols = context.configs.ws.protocols;
+  const wsConfig = {
+    ...context.configs.dataConsumer,
+    headers: {
+      'x-pin': context.pin,
+    },
+  };
 
-  return context.wss.start();
+  context.dataConsumer.connect(wsAddress, wsProtocols, wsConfig);
 };
 
 const stopWsServer = (context) => context.wss.stop();
@@ -43,6 +50,7 @@ const LibWebRTCExchangeServerSpecMachine = Machine({
     dataProvider: null,
     dataConsumer: null,
     configs: null,
+    pin: null,
   },
   initial: 'uninitialized',
   states: {
@@ -71,9 +79,10 @@ const LibWebRTCExchangeServerSpecMachine = Machine({
       entry: ['logEntry'],
       invoke: {
         id: 'setupDataProvider',
-        src: (context) => setupDataProvider(context),
+        src: async (context) => await setupDataProvider(context),
         onDone: {
-          target: 'awaitId',
+          target: 'setupDataConsumer',
+          actions: assign({ pin: (context, event) => event.data }),
         },
         onError: {
           target: 'finalER',
@@ -81,20 +90,14 @@ const LibWebRTCExchangeServerSpecMachine = Machine({
       },
       exit: ['logExit'],
     },
-    awaitId: {
-      on: {
-        id: {
-          actions: ['log'],
-        },
-      },
-    },
-    stopWsServer: {
+    //
+    setupDataConsumer: {
       entry: ['logEntry'],
       invoke: {
-        id: 'stopWsServer',
-        src: (context) => stopWsServer(context),
+        id: 'setupDataConsumer',
+        src: async (context) => await setupDataConsumer(context),
         onDone: {
-          target: 'finalOK',
+          target: 'exchangeToken'
         },
         onError: {
           target: 'finalER',
@@ -102,14 +105,26 @@ const LibWebRTCExchangeServerSpecMachine = Machine({
       },
       exit: ['logExit'],
     },
+    //
+    exchangeToken: {
+      entry: ['logEntry'],
+      exit: ['logExit'],
+    },
+    // },
     finalOK: {
       entry: ['logEntry'],
       type: 'final',
+      always: {
+        actions: ['cleanUp'],
+      },
       exit: ['logExit'],
     },
     finalER: {
       entry: ['logEntry'],
       type: 'final',
+      always: {
+        actions: ['cleanUp'],
+      },
       exit: ['logExit'],
     },
   },
@@ -123,6 +138,9 @@ const LibWebRTCExchangeServerSpecMachine = Machine({
     },
     logExit: (context, event) => {
       debuglog('exit:', event.type);
+    },
+    cleanUp: (context, event) => {
+      debuglog('cleanUp', context);
     },
   },
 });

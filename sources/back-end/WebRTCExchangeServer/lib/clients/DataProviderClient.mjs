@@ -74,16 +74,19 @@ const handleMessage = ({ data }) => {
     payload,
   } = message;
 
-  debuglog('DataProviderClient.handleMessage:', type, payload);
-
   DataProviderClientInterpreter.send({
-    type: 'ws:message',
-    payload: data,
+    type: `ws:${type}`,
+    payload,
   });
 
   switch (type) {
     case 'id': {
       raiseEvent(type, payload);
+
+      break;
+    }
+    case 'connection-established': {
+      debuglog('connection-established');
 
       break;
     }
@@ -107,8 +110,6 @@ const connect = (wsAddress, wsProtocols, wsClientConfig) => new Promise((resolve
     wsProtocols,
     wsClientConfig,
   );
-
-  debuglog('DataProviderClient.connect:', { wsAddress, wsClientConfig });
 
   client.addEventListener('unexpected-response', handleUnexpectedResponse);
   client.addEventListener('error', handleError);

@@ -8,6 +8,9 @@ import {
   WsConstants,
 } from './constants/WsConstants.mjs';
 import {
+  WebsocketCloseCodes,
+} from './constants/WebsocketCloseCodes.mjs';
+import {
   handleMessage,
 } from './handlers/handleMessage.mjs';
 
@@ -64,17 +67,42 @@ export class LibWebRTCExchangeServer {
 
             this.#sockets.set(ws[WsConstants.key].id, ws);
 
-            debuglog('μWs.open:', ws[WsConstants.key], (ws[WsConstants.key]).id);
+            debuglog('μWs.open:', ws[WsConstants.key]);
 
-            if ((ws[WsConstants.key]).credential.type === 'token') {
-              const binaryMessage = this.#encoder.encode(JSON.stringify({
-                type: 'id',
-                payload: (ws[WsConstants.key]).id,
-              }));
-              const isBinary = true;
-              const shouldCompress = false;
+            switch ((ws[WsConstants.key]).credential.type) {
+              case 'token': {
+                const binaryMessage = this.#encoder.encode(JSON.stringify({
+                  type: 'id',
+                  payload: (ws[WsConstants.key]).id,
+                }));
+                const isBinary = true;
+                const shouldCompress = false;
 
-              ws.send(binaryMessage, isBinary, shouldCompress);
+                ws.subscribe((ws[WsConstants.key]).id);
+
+                return ws.send(binaryMessage, isBinary, shouldCompress);
+              }
+              case 'pin': {
+                debuglog('should process PIN', (ws[WsConstants.key]).credential.payload);
+
+                ws.subscribe((ws[WsConstants.key]).credential.payload);
+
+                const isBinary = true;
+                const shouldCompress = false;
+
+                this.#server.publish((ws[WsConstants.key]).credential.payload, this.#encoder.encode(JSON.stringify({
+                  type: 'connection-established',
+                })), isBinary, shouldCompress);
+
+                break;
+              }
+              default: {
+                const errorMessage = `unknown credential type: ${credential.type}`;
+
+                debuglog(errorMessage);
+
+                return ws.end(WebsocketCloseCodes.UNSUPPORTED_PAYLOAD, errorMessage);
+              }
             }
           },
           message: handleMessage,

@@ -2,6 +2,7 @@ import util from 'util';
 import {
   Machine,
   interpret,
+  assign,
 } from 'xstate';
 
 const debuglog = util.debuglog('DataProviderClientMachine');
@@ -9,6 +10,9 @@ const debuglog = util.debuglog('DataProviderClientMachine');
 const DataProviderClientMachine = Machine({
   id: 'DataProviderClientMachine',
   initial: 'uninitialized',
+  context: {
+    id: null,
+  },
   states: {
     uninitialized: {
       entry: ['log'],
@@ -32,7 +36,10 @@ const DataProviderClientMachine = Machine({
     wsOpen: {
       entry: ['log'],
       on: {
-        'ws:message': {
+        'ws:id': {
+          actions: [
+            assign({ id: (context, event) => event.payload }),
+          ],
           target: 'wsMessage',
         },
         'ws:error': {
@@ -42,11 +49,11 @@ const DataProviderClientMachine = Machine({
     },
     wsMessage: {
       entry: ['log'],
-      always: [
-        {
-          target: 'finalOK',
-        },
-      ],
+      // always: [
+      //   {
+      //     target: 'finalOK',
+      //   },
+      // ],
     },
     finalOK: {
       entry: ['log'],
