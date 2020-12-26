@@ -42,6 +42,8 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-security": "^1.4.0",
     "mocha": "^8.2.1",
+    "node-pre-gyp": "^0.17.0",
+    "wrtc": "^0.4.6",
     "ws": "^7.4.1"
   },
   "optionalDependencies": {
