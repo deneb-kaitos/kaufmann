@@ -4,6 +4,9 @@ import {
   interpret,
   assign,
 } from 'xstate';
+import {
+  DataProviderWebsocketInterpreter,
+} from './DataProviderWebsocketMachine.mjs';
 
 const debuglog = util.debuglog('DataProviderClientMachine');
 
@@ -15,13 +18,11 @@ const DataProviderClientMachine = Machine({
   },
   states: {
     uninitialized: {
-      entry: ['log'],
-      on: {
-        'ws:open': {
-          target: 'wsOpen',
-        },
-        'ws:error': {
-          target: 'wsError',
+      invoke: {
+        id: 'DataProviderWebsocketInterpreter',
+        src: DataProviderWebsocketInterpreter,
+        onDone: {
+          
         },
       },
     },
@@ -34,26 +35,33 @@ const DataProviderClientMachine = Machine({
       ],
     },
     wsOpen: {
-      entry: ['log'],
       on: {
-        'ws:id': {
+        id: {
           actions: [
             assign({ id: (context, event) => event.payload }),
+            'log',
           ],
-          target: 'wsMessage',
+          target: 'handleWebRTC',
         },
         'ws:error': {
           target: 'wsError',
         },
       },
     },
-    wsMessage: {
-      entry: ['log'],
-      // always: [
-      //   {
-      //     target: 'finalOK',
-      //   },
-      // ],
+    handleWebRTC: {
+      on: {
+        'connection-established': {
+          actions: ['log'],
+        },
+        'RTCSessionDescription': {
+          actions: [
+            assign({
+              rtcSessionDescription: (context, event) => event.payload
+            }),
+            'log',
+          ],
+        },
+      },
     },
     finalOK: {
       entry: ['log'],

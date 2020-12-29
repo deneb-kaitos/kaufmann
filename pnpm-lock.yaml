@@ -6,7 +6,7 @@ importers:
       nanoid: 3.1.20
       nanoid-dictionary: 4.1.0
       nanoid-generate: 1.0.0
-      uWebSockets.js: github.com/uNetworking/uWebSockets.js/bd720c90ff8b90f478d918c1cbe3f1dcbc3a765b
+      uWebSockets.js: github.com/uNetworking/uWebSockets.js/8cf8b315f10a31428c007b954f10e8c577858e6f
       xstate: 4.15.2
     devDependencies:
       '@babel/core': 7.12.10
@@ -51,7 +51,7 @@ importers:
       nanoid-dictionary: ^4.1.0
       nanoid-generate: ^1.0.0
       node-pre-gyp: ^0.17.0
-      uWebSockets.js: 'github:uNetworking/uWebSockets.js#v18.11.0'
+      uWebSockets.js: 'github:uNetworking/uWebSockets.js#v18.12.0'
       utf-8-validate: ^5.0.3
       wrtc: ^0.4.6
       ws: ^7.4.1
@@ -2621,6 +2621,22 @@ packages:
     optional: true
     resolution:
       integrity: sha512-MN6ZpzmfNCRM+3t57PTJHgHyw/h4OWnZ6mR8P5j/uZtqQr46RRuDE/P+g3n0YR/AiYXeWixZZzaip77gdICfRg==
+  /node-pre-gyp/0.13.0:
+    dependencies:
+      detect-libc: 1.0.3
+      mkdirp: 0.5.5
+      needle: 2.5.2
+      nopt: 4.0.3
+      npm-packlist: 1.4.8
+      npmlog: 4.1.2
+      rc: 1.2.8
+      rimraf: 2.7.1
+      semver: 5.7.1
+      tar: 4.4.13
+    dev: true
+    hasBin: true
+    resolution:
+      integrity: sha512-Md1D3xnEne8b/HGVQkZZwV27WUi1ZRuZBij24TNaZwUPU3ZAFtvT6xxJGaUVillfmMKnn5oD1HoGsp2Ftik7SQ==
   /node-pre-gyp/0.17.0:
     dependencies:
       detect-libc: 1.0.3
@@ -3564,6 +3580,8 @@ packages:
   /wrtc/0.4.6:
     bundledDependencies:
       - node-pre-gyp
+    dependencies:
+      node-pre-gyp: 0.13.0
     dev: true
     engines:
       node: ^8.11.2 || ^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0
@@ -3670,9 +3688,9 @@ packages:
       node: '>=10'
     resolution:
       integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
-  github.com/uNetworking/uWebSockets.js/bd720c90ff8b90f478d918c1cbe3f1dcbc3a765b:
+  github.com/uNetworking/uWebSockets.js/8cf8b315f10a31428c007b954f10e8c577858e6f:
     dev: false
     name: uWebSockets.js
     resolution:
-      tarball: 'https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/bd720c90ff8b90f478d918c1cbe3f1dcbc3a765b'
-    version: 18.11.0
+      tarball: 'https://codeload.github.com/uNetworking/uWebSockets.js/tar.gz/8cf8b315f10a31428c007b954f10e8c577858e6f'
+    version: 18.12.0

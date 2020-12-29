@@ -83,8 +83,6 @@ export class LibWebRTCExchangeServer {
                 return ws.send(binaryMessage, isBinary, shouldCompress);
               }
               case 'pin': {
-                debuglog('should process PIN', (ws[WsConstants.key]).credential.payload);
-
                 ws.subscribe((ws[WsConstants.key]).credential.payload);
 
                 const isBinary = true;

@@ -1,7 +1,7 @@
 import util from 'util';
 import {
   DataProviderClientInterpreter,
-} from './DataProviderClientMachine.mjs';
+} from './DataProviderClientMachine/DataProviderClientMachine.mjs';
 import {
   WebsocketCloseCodes,
 } from '../constants/WebsocketCloseCodes.mjs';
@@ -14,11 +14,9 @@ const debuglog = util.debuglog('DataProviderClient');
  * 3. open WebRTC connection ???
  */
 
-DataProviderClientInterpreter.onTransition((state) => {
-  debuglog('.onTransition:', state.value);
-});
-
 let client = null;
+let rtcPeerConnection = null;
+let rtcDataChannel = null;
 // let id = null;
 const events = new Map();
 
@@ -57,13 +55,42 @@ const handleClose = (closeEvent) => {
     payload: closeEvent,
   });
 };
-const handleOpen = (/* openEvent */) => {
+const handleOpen = (openEvent) => {
   debuglog('DataProviderClient.handleOpen');
   // openEvent.target - ws
 
   DataProviderClientInterpreter.send({
-    type: 'ws:open',
+    type: `ws:${openEvent.type}`,
     payload: null,
+  });
+};
+const establishRTC = async () => {
+  if (rtcPeerConnection !== null) {
+    throw Error('rtcPeerConnection is already established');
+  }
+
+  rtcPeerConnection = new RTCPeerConnection();
+  rtcDataChannel = rtcPeerConnection.createDataChannel('rtcDataChannel');
+
+  rtcDataChannel.addEventListener('open', (rtcDataChannelOpenEvent) => {
+    debuglog('rtcDataChannel on:open', rtcDataChannelOpenEvent);
+  });
+  rtcDataChannel.addEventListener('close', (rtcDataChannelCloseEvent) => {
+    debuglog('rtcDataChannel on:close', rtcDataChannelCloseEvent);
+  });
+  rtcDataChannel.addEventListener('error', (rtcDataChannelErrorEvent) => {
+    debuglog('rtcDataChannel on:error', rtcDataChannelErrorEvent);
+  });
+  rtcDataChannel.addEventListener('message', (rtcDataChannelMessageEvent) => {
+    debuglog('rtcDataChannel on:message', rtcDataChannelMessageEvent);
+  });
+
+  const offer = await rtcPeerConnection.createOffer();
+  await rtcPeerConnection.setLocalDescription(offer);
+
+  DataProviderClientInterpreter.send({
+    type: rtcPeerConnection.localDescription.constructor.name,
+    payload: rtcPeerConnection.localDescription,
   });
 };
 const handleMessage = ({ data }) => {
@@ -74,19 +101,24 @@ const handleMessage = ({ data }) => {
     payload,
   } = message;
 
-  DataProviderClientInterpreter.send({
-    type: `ws:${type}`,
-    payload,
-  });
-
   switch (type) {
     case 'id': {
+      DataProviderClientInterpreter.send({
+        type,
+        payload,
+      });
+
       raiseEvent(type, payload);
 
       break;
     }
     case 'connection-established': {
-      debuglog('connection-established');
+      DataProviderClientInterpreter.send({
+        type,
+        payload,
+      });
+
+      establishRTC();
 
       break;
     }
@@ -145,6 +177,11 @@ const addEventListener = (event, handler) => {
 
   events.get(event).push(handler);
 };
+
+DataProviderClientInterpreter
+  .onTransition((state) => {
+    debuglog('.onTransition:', state.value);
+  });
 
 export const DataProviderClient = Object.freeze({
   connect,
